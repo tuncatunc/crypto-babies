@@ -12,14 +12,19 @@ contract Babies {
   }
 
   Baby[] public babies;
+  mapping(uint => address) public babyToParent;
+  mapping(address => uint) public parentToBabyCount;
 
   event NewBaby(uint _babyId, string _name, uint _dna);
 
   // @notice create a new baby
-  function _giveBirthToABaby(string memory _name, uint _dna) private {
+  function _giveBirthToABaby(string memory _name, uint _dna) internal {
     
     babies.push(Baby(_name, _dna));
     uint babyId = babies.length - 1;
+
+    babyToParent[babyId] = msg.sender;
+    parentToBabyCount[msg.sender]++;
 
     emit NewBaby(babyId, _name, _dna);
   }
@@ -28,7 +33,10 @@ contract Babies {
    return uint(keccak256(abi.encode(_str))) % dnaModulus;
   }
 
-  function giveBirthToTheNewBaby(string memory _name) public {
+  // @notice give bith to a baby
+  // @notice 
+  function giveBirthToTheNewBaby(string memory _name) public  {
+    require(parentToBabyCount[msg.sender] == 0, "Baby already given birth");
     _giveBirthToABaby(_name, _generateRandomDna(_name));
   }
 }
